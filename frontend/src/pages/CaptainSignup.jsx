@@ -3,21 +3,21 @@ import { Link } from 'react-router-dom'
 import { CaptainDataContext } from '../context/CapatainContext'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
-import AVTSImage from '../assets/AVTS-R-BG.png'; 
+import AVTSImage from '../assets/AVTS-R-BG.png';
 
 const CaptainSignup = () => {
 
   const navigate = useNavigate()
 
-  const [ email, setEmail ] = useState('')
-  const [ password, setPassword ] = useState('')
-  const [ firstName, setFirstName ] = useState('')
-  const [ lastName, setLastName ] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
 
-  const [ vehicleColor, setVehicleColor ] = useState('')
-  const [ vehiclePlate, setVehiclePlate ] = useState('')
-  const [ vehicleCapacity, setVehicleCapacity ] = useState('')
-  const [ vehicleType, setVehicleType ] = useState('')
+  const [vehicleColor, setVehicleColor] = useState('')
+  const [vehiclePlate, setVehiclePlate] = useState('')
+  const [vehicleCapacity, setVehicleCapacity] = useState('')
+  const [vehicleType, setVehicleType] = useState('')
 
 
   const { captain, setCaptain } = React.useContext(CaptainDataContext)
@@ -62,7 +62,11 @@ const CaptainSignup = () => {
   return (
     <div className='py-5 px-5 h-screen flex flex-col justify-between'>
       <div>
-        <img className='w-20 mb-3' src={AVTSImage} alt="" />
+        {/* <img className='w-20 mb-3' src={AVTSImage} alt="" /> */}
+        <div className='flex  items-center gap-0'>
+          <img className='w-20 mb-3' src={AVTSImage} alt="" />
+          <span className='text-sm mb-1 font-bold text-gray-600'>Driver</span>
+        </div>
         {/* <img className='w-20 mb-3' src="https://www.svgrepo.com/show/505031/uber-driver.svg" alt="" /> */}
 
         <form onSubmit={(e) => {

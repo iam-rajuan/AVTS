@@ -3,12 +3,12 @@ import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { CaptainDataContext } from '../context/CapatainContext'
-import AVTSImage from '../assets/AVTS-R-BG.png'; 
+import AVTSImage from '../assets/AVTS-R-BG.png';
 
 const Captainlogin = () => {
 
-  const [ email, setEmail ] = useState('')
-  const [ password, setPassword ] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
 
   const { captain, setCaptain } = React.useContext(CaptainDataContext)
   const navigate = useNavigate()
@@ -40,7 +40,11 @@ const Captainlogin = () => {
     <div className='p-7 h-screen flex flex-col justify-between'>
       <div>
         {/* <img className='w-20 mb-3' src="https://www.svgrepo.com/show/505031/uber-driver.svg" alt="" /> */}
-        <img className='w-20 mb-3' src={AVTSImage} alt="" />
+        {/* <img className='w-20 mb-3' src={AVTSImage} alt="" /> */}
+        <div className='flex  items-center gap-0'>
+          <img className='w-20 mb-3' src={AVTSImage} alt="" />
+          <span className='text-sm mb-1 font-bold text-gray-600'>Driver</span>
+        </div>
 
         <form onSubmit={(e) => {
           submitHandler(e)
@@ -76,12 +80,20 @@ const Captainlogin = () => {
         </form>
         <p className='text-center'>Join a fleet? <Link to='/captain-signup' className='text-blue-600'>Register as a Captain</Link></p>
       </div>
-      <div>
+      {/* <div>
         <Link
           to='/login'
           className='bg-[#d5622d] flex items-center justify-center text-white font-semibold mb-5 rounded-lg px-4 py-2 w-full text-lg placeholder:text-base'
         >Sign in as User</Link>
-      </div>
+      </div> */}
+      {/* Footer - Fixed at Bottom */}
+      <footer className="w-full px-4 pb-2 mt-auto">
+        <p className="text-[10px] leading-tight text-center">
+          This site is protected by reCAPTCHA and the{" "}
+          <span className="underline">Google Privacy Policy</span> and{" "}
+          <span className="underline">Terms of Service apply</span>.
+        </p>
+      </footer>
     </div>
   )
 }

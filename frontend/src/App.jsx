@@ -14,6 +14,7 @@ import CaptainLogout from './pages/CaptainLogout'
 import Riding from './pages/Riding'
 import CaptainRiding from './pages/CaptainRiding'
 import 'remixicon/fonts/remixicon.css'
+import SwitchUser from './pages/SwitchUser'
 
 const App = () => {
 
@@ -21,6 +22,7 @@ const App = () => {
     <div>
       <Routes>
         <Route path='/' element={<Start />} />
+        <Route path='/SwitchUser' element={<SwitchUser />} />
         <Route path='/login' element={<UserLogin />} />
         <Route path='/riding' element={<Riding />} />
         <Route path='/captain-riding' element={<CaptainRiding />} />

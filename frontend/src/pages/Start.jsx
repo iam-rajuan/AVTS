@@ -1,4 +1,3 @@
-
 import React from 'react'
 import { Link } from 'react-router-dom'
 // import AVTS from "../assets/AVTS-removebg.png"
@@ -24,7 +23,8 @@ const Start = () => {
         <div className='bg-white pb-8 py-4 px-4'>
           <h2 className='text-[30px] font-semibold'>Get Started with AVTS</h2>
           <p>Advance Vehicle Tracking System</p>
-          <Link to='/login' className='flex items-center justify-center w-full bg-black text-white py-3 rounded-lg mt-5'>Continue</Link>
+          <Link to='/SwitchUser' className='flex items-center justify-center w-full bg-black text-white py-3 rounded-lg mt-5'>Continue</Link>
+          {/* <Link to='/login' className='flex items-center justify-center w-full bg-black text-white py-3 rounded-lg mt-5'>Continue</Link> */}
         </div>
       </div>
     </div>
