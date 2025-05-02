@@ -14,8 +14,9 @@ const SwitchUser = () => {
         backgroundRepeat: "no-repeat",
         backgroundSize: "contain",
         // backgroundPosition: 'center',
-        width: "392px", // Set your desired width (e.g., 800px, 100%, etc.)
-        height: "381px", // Set your desired height (e.g., 500px, 100vh, etc.)
+        // width: "392px", // Set your desired width (e.g., 800px, 100%, etc.)
+        backgroundPosition: "center top",
+        // height: "381px", // Set your desired height (e.g., 500px, 100vh, etc.)
       }}
       className="h-screen pt-8 flex justify-between flex-col w-full overflow-hidden font-sans"
     >
@@ -55,16 +56,16 @@ const SwitchUser = () => {
       <main className="absolute top-[300px] w-full px-[25px] pt-[77px]">
 
 
-        <h2 className="text-sm font-normal mb-2">Unlock a Seamless Journey</h2>
-        <div>
+        <h2 className="text-sm font-normal mb-2 text-left pl-[14px]">Unlock a Seamless Journey</h2>
+        <div className="flex justify-center">
         <Link to="/login" className="flex items-center justify-center w-[315px] h-[61px] bg-blue-600 text-white rounded-lg font-medium text-lg">
           Sign in as an User
         </Link>
         </div>
 
 
-        <h2 className="text-sm font-normal mb-2">Drive Smarter, Live Better</h2>
-        <div>
+        <h2 className="text-sm font-normal mb-2 text-left pl-[14px]">Drive Smarter, Live Better</h2>
+        <div className="flex justify-center">
         <Link
           to="/captain-login"
           className="flex items-center justify-center w-[315px] h-[61px] bg-green-600 text-white rounded-lg font-medium text-lg"
