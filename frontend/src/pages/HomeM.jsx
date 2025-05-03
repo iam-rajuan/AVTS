@@ -51,7 +51,7 @@ const HomeM = () => {
     // moving ? '/icons/green-car.png' : '/icons/red-car.png';
 
   useEffect(() => {
-    socket.current = io('http://localhost:4000');
+    socket.current = io('http://localhost:5000');
 
     socket.current.on('locationUpdate', ({ vehicleId, coords }) => {
       setDrivers((prev) => {
