@@ -1,6 +1,90 @@
+// const socketIo = require('socket.io');
+// const userModel = require('./models/user.model');
+// const captainModel = require('./models/captain.model');
+
+// let io;
+
+// function initializeSocket(server) {
+//     io = socketIo(server, {
+//         cors: {
+//             origin: '*',
+//             methods: [ 'GET', 'POST' ]
+//         }
+//     });
+
+//     io.on('connection', (socket) => {
+//         console.log(`Client connected: ${socket.id}`);
+
+
+//         socket.on('join', async (data) => {
+//             const { userId, userType } = data;
+
+//             if (userType === 'user') {
+//                 await userModel.findByIdAndUpdate(userId, { socketId: socket.id });
+//             } else if (userType === 'captain') {
+//                 await captainModel.findByIdAndUpdate(userId, { socketId: socket.id });
+//             }
+//         });
+
+
+//         socket.on('update-location-captain', async (data) => {
+//             const { userId, location } = data;
+
+//             if (!location || !location.ltd || !location.lng) {
+//                 return socket.emit('error', { message: 'Invalid location data' });
+//             }
+
+//             await captainModel.findByIdAndUpdate(userId, {
+//                 location: {
+//                     ltd: location.ltd,
+//                     lng: location.lng
+//                 }
+//             });
+//         });
+
+//         socket.on('disconnect', () => {
+//             console.log(`Client disconnected: ${socket.id}`);
+//         });
+//     });
+// }
+
+// const sendMessageToSocketId = (socketId, messageObject) => {
+
+// console.log(messageObject);
+
+//     if (io) {
+//         io.to(socketId).emit(messageObject.event, messageObject.data);
+//     } else {
+//         console.log('Socket.io not initialized.');
+//     }
+// }
+
+// module.exports = { initializeSocket, sendMessageToSocketId };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const socketIo = require('socket.io');
 const userModel = require('./models/user.model');
 const captainModel = require('./models/captain.model');
+const DriverLocation = require('./models/driverLocation.model');
 
 let io;
 
@@ -15,7 +99,6 @@ function initializeSocket(server) {
     io.on('connection', (socket) => {
         console.log(`Client connected: ${socket.id}`);
 
-
         socket.on('join', async (data) => {
             const { userId, userType } = data;
 
@@ -25,7 +108,6 @@ function initializeSocket(server) {
                 await captainModel.findByIdAndUpdate(userId, { socketId: socket.id });
             }
         });
-
 
         socket.on('update-location-captain', async (data) => {
             const { userId, location } = data;
@@ -42,6 +124,28 @@ function initializeSocket(server) {
             });
         });
 
+        // Add driver location tracking functionality
+        socket.on('locationUpdate', async ({ vehicleId, coords }) => {
+            const { lat, lng } = coords;
+
+            try {
+                await DriverLocation.findOneAndUpdate(
+                    { vehicleId },
+                    { latitude: lat, longitude: lng },
+                    { upsert: true, new: true }
+                );
+
+                io.emit('locationUpdate', {
+                    vehicleId,
+                    coords: { lat, lng }
+                });
+
+                console.log(`Location updated: ${vehicleId} -> (${lat}, ${lng})`);
+            } catch (error) {
+                console.error('Error updating location:', error);
+            }
+        });
+
         socket.on('disconnect', () => {
             console.log(`Client disconnected: ${socket.id}`);
         });
@@ -49,8 +153,7 @@ function initializeSocket(server) {
 }
 
 const sendMessageToSocketId = (socketId, messageObject) => {
-
-console.log(messageObject);
+    console.log(messageObject);
 
     if (io) {
         io.to(socketId).emit(messageObject.event, messageObject.data);
