@@ -24,6 +24,9 @@ const Start = () => {
           <h2 className='text-[30px] font-semibold'>Get Started with AVTS</h2>
           <p>Advance Vehicle Tracking System</p>
           <Link to='/SwitchUser' className='flex items-center justify-center w-full bg-black text-white py-3 rounded-lg mt-5'>Continue</Link>
+
+
+          {/* <Link to='/WelcomeScreen' className='flex items-center justify-center w-full bg-black text-white py-3 rounded-lg mt-5'>WelcomeScreen</Link> */}
           {/* <Link to='/login' className='flex items-center justify-center w-full bg-black text-white py-3 rounded-lg mt-5'>Continue</Link> */}
         </div>
       </div>
