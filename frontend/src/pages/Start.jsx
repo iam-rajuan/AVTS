@@ -5,7 +5,7 @@ import AVTSImage from '../assets/AVTS-R-BG.png'; // Correct the path to your ima
 import AVTSHome from '../assets/vts-home.jpg'; // Correct the path to your image
 
 const Start = () => {
-  return (
+  return (               
     <div>
       <div       
       style={{
