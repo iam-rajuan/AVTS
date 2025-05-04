@@ -11,7 +11,7 @@ export const NavigationFooter = () => {
   const location = useLocation();
 
   const navItems = [
-    { name: "HomeM", path: "/homem", icon: HomeIcon },
+    { name: "Home", path: "/home", icon: HomeIcon },
     { name: "Service", path: "/service", icon: ServiceIcon },
     { name: "Activity", path: "/activity", icon: ActivityIcon },
     { name: "Account", path: "/account", icon: AccountIcon }
