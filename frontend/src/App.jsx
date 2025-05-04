@@ -19,7 +19,7 @@ import WelcomeScreen from './pages/WelcomeScreen'
 import Service from './pages/Service'
 import Activity from './pages/Activity'
 import Account from './pages/Account'
-import HomeM from './pages/HomeM'
+// import HomeM from './pages/HomeM'
 
 const App = () => {
   return (
@@ -37,7 +37,7 @@ const App = () => {
       <Route path='/activity' element={<Activity />} />
       <Route path='/account' element={<Account />} />
         <Route path='/home' element={<Home />} />
-        <Route path='/homem' element={<HomeM />} />
+        {/* <Route path='/homem' element={<HomeM />} /> */}
 
       {/* Protected User Routes */}
       <Route element={<UserProtectWrapper />}>
