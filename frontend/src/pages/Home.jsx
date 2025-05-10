@@ -7,7 +7,10 @@ import { NavigationFooter } from "../components/NavigationFooter";
 import mapboxgl from "mapbox-gl";
 import io from "socket.io-client";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { LucideLocate, LucidePlus, LucideMinus, LucideMenu, LucideX, LucideMoon, LucideSun } from "lucide-react";
+import { LucideLocate, LucidePlus, LucideMinus, LucideMenu, LucideX, LucideMoon, LucideSun, Hamburger} from "lucide-react";
+import HamburgerMenu from "../components/HamburgerMenu";
+// import {  } from "../components/";
+
 
 // Set Mapbox access token
 mapboxgl.accessToken = "pk.eyJ1IjoiaWFtLXJhanVhbiIsImEiOiJjbTlvNWppdHgwcXFuMmpzMzhjeTJ2cm9hIn0.UXhzpO23v4aouhc4w-kTeA";
@@ -35,16 +38,14 @@ const Home = () => {
   const [drivers, setDrivers] = useState([]);
   const [userCoords, setUserCoords] = useState(null);
   const socket = useRef(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   const [darkMode, setDarkMode] = useState(() => {
     const savedMode = localStorage.getItem('darkMode');
     return savedMode ? JSON.parse(savedMode) : false;
   });
   const [initialDriversLoaded, setInitialDriversLoaded] = useState(false);
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
+
 
   const toggleDarkMode = () => {
     const newDarkMode = !darkMode;
@@ -352,13 +353,9 @@ const Home = () => {
     <div className="bg-gray-50 min-h-screen relative overflow-hidden">
       <div ref={mapContainer} className="w-full h-screen z-10" />
 
-      {/* Hamburger Menu Button */}
-      <button
-        onClick={toggleSidebar}
-        className="absolute top-4 right-4 z-20 bg-black text-white p-2 rounded-full shadow-lg hover:bg-gray-800"
-      >
-        {isSidebarOpen ? <LucideX className="w-6 h-6" /> : <LucideMenu className="w-6 h-6" />}
-      </button>
+
+      {/* hamburgerMenu */}
+      <HamburgerMenu />
 
       {/* Dark Mode Toggle Button */}
       <button
@@ -368,38 +365,7 @@ const Home = () => {
         {darkMode ? <LucideSun className="w-6 h-6" /> : <LucideMoon className="w-6 h-6" />}
       </button>
 
-      {/* Sidebar */}
-      <div
-        className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg z-30 transform transition-transform duration-300 ease-in-out ${
-          isSidebarOpen ? "translate-x-0" : "translate-x-full"
-        }`}
-      >
-        <div className="p-4">
-          <h2 className="text-xl font-bold mb-4">Demo Sidebar</h2>
-          <p className="mb-4">This is a demo sidebar content.</p>
-          <p className="mb-4">You can put any content here like:</p>
-          <ul className="list-disc pl-5">
-            <li>Navigation links</li>
-            <li>Settings</li>
-            <li>User profile</li>
-            <li>App information</li>
-          </ul>
-          <button
-            onClick={toggleSidebar}
-            className="mt-4 bg-black text-white px-4 py-2 rounded hover:bg-gray-800"
-          >
-            Close
-          </button>
-        </div>
-      </div>
-
-      {/* Overlay when sidebar is open */}
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-20"
-          onClick={toggleSidebar}
-        />
-      )}
+      ==
 
       <div
         style={{
