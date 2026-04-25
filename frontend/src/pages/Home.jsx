@@ -11,6 +11,7 @@ import { SocketContext } from "../context/SocketContext";
 import { useAuth } from "../context/AuthContext";
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_API || "";
+const NEARBY_DRIVER_RADIUS_KM = 25;
 
 if (!window.workerUrlSet) {
   window.workerUrlSet = true;
@@ -32,6 +33,7 @@ const Home = () => {
   const map = useRef(null);
   const userMarker = useRef(null);
   const captainMarkers = useRef({});
+  const hasFitNearbyDrivers = useRef(false);
 
   const [captains, setCaptains] = useState([]);
   const [userCoords, setUserCoords] = useState(null);
@@ -93,6 +95,30 @@ const Home = () => {
     captain.captainId != null ? String(captain.captainId) : String(captain.vehicleId || captain.vehicle?.plate)
   );
 
+  const getDistanceInKm = (fromCoords, toCoords) => {
+    const earthRadiusKm = 6371;
+    const toRadians = (value) => value * Math.PI / 180;
+    const latitudeDelta = toRadians(toCoords.latitude - fromCoords.latitude);
+    const longitudeDelta = toRadians(toCoords.longitude - fromCoords.longitude);
+    const fromLatitude = toRadians(fromCoords.latitude);
+    const toLatitude = toRadians(toCoords.latitude);
+
+    const haversine =
+      Math.sin(latitudeDelta / 2) * Math.sin(latitudeDelta / 2) +
+      Math.cos(fromLatitude) * Math.cos(toLatitude) *
+      Math.sin(longitudeDelta / 2) * Math.sin(longitudeDelta / 2);
+
+    return earthRadiusKm * 2 * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine));
+  };
+
+  const formatDistance = (distanceKm) => {
+    if (distanceKm < 1) {
+      return `${Math.round(distanceKm * 1000)} m`;
+    }
+
+    return `${distanceKm.toFixed(2)} km`;
+  };
+
   const normalizeCaptainRecord = (captain) => {
     const vehicle = captain.vehicle || {};
 
@@ -119,16 +145,29 @@ const Home = () => {
       return captain;
     }
 
-    const distance = Math.sqrt(
-      Math.pow(captain.latitude - userCoords.latitude, 2) +
-      Math.pow(captain.longitude - userCoords.longitude, 2)
-    ).toFixed(2);
+    const distance = getDistanceInKm(userCoords, {
+      latitude: captain.latitude,
+      longitude: captain.longitude,
+    });
 
     return {
       ...captain,
-      distance: `${distance} km`,
-      eta: `${Math.max(1, Math.round(Number(distance) * 50))} minutes`,
+      distance: formatDistance(distance),
+      eta: `${Math.max(1, Math.round(distance * 3))} minutes`,
     };
+  };
+
+  const isNearbyCaptain = (captain) => {
+    if (!userCoords) {
+      return true;
+    }
+
+    const distance = getDistanceInKm(userCoords, {
+      latitude: captain.latitude,
+      longitude: captain.longitude,
+    });
+
+    return distance <= NEARBY_DRIVER_RADIUS_KM;
   };
 
   const toggleDarkMode = () => {
@@ -196,8 +235,9 @@ const Home = () => {
           center: [ coords.longitude, coords.latitude ],
           zoom: 13,
         });
+        hasFitNearbyDrivers.current = false;
 
-        userMarker.current = new mapboxgl.Marker({ color: "blue" })
+        userMarker.current = new mapboxgl.Marker({ color: "#2563eb", scale: 0.9 })
           .setLngLat([ coords.longitude, coords.latitude ])
           .setPopup(new mapboxgl.Popup().setText("You are here"))
           .addTo(map.current);
@@ -244,7 +284,10 @@ const Home = () => {
 
     const activeCaptainIds = new Set(
       captains
-        .map((captain) => getCaptainMarkerKey(normalizeCaptainRecord(captain)))
+        .map(normalizeCaptainRecord)
+        .filter((captain) => captain.latitude != null && captain.longitude != null)
+        .filter(isNearbyCaptain)
+        .map(getCaptainMarkerKey)
         .filter(Boolean)
     );
 
@@ -259,6 +302,10 @@ const Home = () => {
       const normalizedCaptain = normalizeCaptainRecord(captain);
 
       if (normalizedCaptain.latitude == null || normalizedCaptain.longitude == null) {
+        return;
+      }
+
+      if (!isNearbyCaptain(normalizedCaptain)) {
         return;
       }
 
@@ -286,6 +333,7 @@ const Home = () => {
       const marker = new mapboxgl.Marker({
         element: createVehicleMarkerElement(normalizedCaptain),
         anchor: "bottom",
+        offset: [28, 0],
       })
         .setLngLat([ normalizedCaptain.longitude, normalizedCaptain.latitude ])
         .setPopup(new mapboxgl.Popup().setText(popupText))
@@ -298,6 +346,37 @@ const Home = () => {
 
       captainMarkers.current[ markerKey ] = marker;
     });
+  }, [captains, userCoords]);
+
+  useEffect(() => {
+    if (!map.current || !userCoords || hasFitNearbyDrivers.current) {
+      return;
+    }
+
+    const nearbyCaptains = captains
+      .map(normalizeCaptainRecord)
+      .filter((captain) => captain.latitude != null && captain.longitude != null)
+      .filter(isNearbyCaptain);
+
+    if (!nearbyCaptains.length) {
+      return;
+    }
+
+    const bounds = new mapboxgl.LngLatBounds(
+      [userCoords.longitude, userCoords.latitude],
+      [userCoords.longitude, userCoords.latitude]
+    );
+
+    nearbyCaptains.forEach((captain) => {
+      bounds.extend([captain.longitude, captain.latitude]);
+    });
+
+    map.current.fitBounds(bounds, {
+      padding: { top: 120, right: 80, bottom: 160, left: 80 },
+      maxZoom: 15,
+      duration: 700,
+    });
+    hasFitNearbyDrivers.current = true;
   }, [captains, userCoords]);
 
   useEffect(() => {
