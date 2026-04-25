@@ -41,6 +41,19 @@ const Home = () => {
     return savedMode ? JSON.parse(savedMode) : false;
   });
 
+  const createVehicleMarkerElement = (captain) => {
+    const markerElement = document.createElement("button");
+    markerElement.type = "button";
+    markerElement.className = "h-11 w-11 rounded-full border-2 border-white shadow-lg flex items-center justify-center text-xl";
+    markerElement.style.backgroundColor = captain.currentLoad === "full_load" ? "#ef4444" : "#10b981";
+    markerElement.title = `${captain.captainName || "Captain"} - ${captain.vehicle?.plate || captain.vehicleId}`;
+
+    const vehicleType = captain.vehicle?.vehicleType;
+    markerElement.textContent = vehicleType === "motorcycle" ? "🏍️" : vehicleType === "auto" ? "🛺" : "🚗";
+
+    return markerElement;
+  };
+
   const toggleDarkMode = () => {
     const nextMode = !darkMode;
     setDarkMode(nextMode);
@@ -152,6 +165,19 @@ const Home = () => {
       return;
     }
 
+    const activeCaptainIds = new Set(
+      captains
+        .filter((captain) => captain.captainId != null)
+        .map((captain) => String(captain.captainId))
+    );
+
+    Object.entries(captainMarkers.current).forEach(([ captainId, marker ]) => {
+      if (!activeCaptainIds.has(captainId)) {
+        marker.remove();
+        delete captainMarkers.current[ captainId ];
+      }
+    });
+
     captains.forEach((captain) => {
       if (captain.latitude == null || captain.longitude == null) {
         return;
@@ -165,7 +191,10 @@ const Home = () => {
         return;
       }
 
-      const marker = new mapboxgl.Marker({ color: captain.currentLoad === "full_load" ? "#ef4444" : "#10b981" })
+      const marker = new mapboxgl.Marker({
+        element: createVehicleMarkerElement(captain),
+        anchor: "center",
+      })
         .setLngLat([ captain.longitude, captain.latitude ])
         .setPopup(new mapboxgl.Popup().setText(popupText))
         .addTo(map.current);

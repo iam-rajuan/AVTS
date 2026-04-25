@@ -1,5 +1,5 @@
-import React from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import Start from './pages/Start';
 import UserLogin from './pages/UserLogin';
 import UserSignup from './pages/UserSignup';
@@ -19,16 +19,52 @@ import ProtectedRoute from './components/ProtectedRoute';
 import CaptainServices from './pages/CaptainServices';
 import CaptainStatus from './pages/CaptainStatus';
 import CaptainSettings from './pages/CaptainSettings';
+import { useAuth } from './context/AuthContext';
+
+const LAST_ROUTE_KEY = 'lastRoute';
+
+const homeByRole = {
+  user: '/user/home',
+  captain: '/captain/home',
+};
 
 const App = () => {
+  const location = useLocation();
+  const { session } = useAuth();
+
+  useEffect(() => {
+    if (!session.token) {
+      return;
+    }
+
+    if (location.pathname.startsWith('/user/') || location.pathname.startsWith('/captain/')) {
+      localStorage.setItem(LAST_ROUTE_KEY, `${location.pathname}${location.search}`);
+    }
+  }, [location.pathname, location.search, session.token]);
+
+  const lastRoute = localStorage.getItem(LAST_ROUTE_KEY);
+  const authenticatedLandingRoute = lastRoute || homeByRole[session.role] || '/';
+
   return (
     <Routes>
-      <Route path='/' element={<Start />} />
-      <Route path='/switch-user' element={<SwitchUser />} />
+      <Route
+        path='/'
+        element={session.token ? <Navigate to={authenticatedLandingRoute} replace /> : <Start />}
+      />
+      <Route
+        path='/switch-user'
+        element={session.token ? <Navigate to={authenticatedLandingRoute} replace /> : <SwitchUser />}
+      />
       <Route path='/SwitchUser' element={<Navigate to='/switch-user' replace />} />
 
-      <Route path='/login' element={<UserLogin />} />
-      <Route path='/signup' element={<UserSignup />} />
+      <Route
+        path='/login'
+        element={session.token ? <Navigate to={authenticatedLandingRoute} replace /> : <UserLogin />}
+      />
+      <Route
+        path='/signup'
+        element={session.token ? <Navigate to={authenticatedLandingRoute} replace /> : <UserSignup />}
+      />
       <Route path='/captain-login' element={<Navigate to='/login?role=captain' replace />} />
       <Route path='/captain-signup' element={<Navigate to='/signup?role=captain' replace />} />
 
