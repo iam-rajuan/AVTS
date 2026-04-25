@@ -1,78 +1,81 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const homeByRole = {
+const dashboardByRole = {
   user: '/user/home',
   captain: '/captain/home',
+  driver: '/captain/home',
 };
 
 const loginByRole = {
   user: '/login?role=user',
   captain: '/login?role=captain',
+  driver: '/login?role=captain',
 };
 
-const ProtectedRoute = ({ allowedRole, children }) => {
-  const { session, refreshProfile, clearSession } = useAuth();
-  const [isChecking, setIsChecking] = useState(true);
-  const [resolvedRole, setResolvedRole] = useState(session.role || '');
+const LoadingScreen = () => (
+  <div className="min-h-screen grid place-items-center bg-white text-gray-700">
+    Loading...
+  </div>
+);
+
+const normalizeAllowedRoles = (allowedRoles) => (
+  Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles]
+);
+
+export const getDashboardForRole = (role) => dashboardByRole[role] || '/';
+
+export const RoleProtectedRoute = ({ allowedRoles, children }) => {
+  const { session, isAuthLoading } = useAuth();
   const location = useLocation();
+  const roles = normalizeAllowedRoles(allowedRoles);
 
-  useEffect(() => {
-    let isMounted = true;
-
-    async function verify() {
-      if (!session.token) {
-        if (isMounted) {
-          setIsChecking(false);
-          setResolvedRole('');
-        }
-        return;
-      }
-
-      try {
-        if (session.profile && session.role === allowedRole) {
-          if (isMounted) {
-            setResolvedRole(session.role);
-            setIsChecking(false);
-          }
-          return;
-        }
-
-        const authData = await refreshProfile();
-        if (isMounted) {
-          setResolvedRole(authData?.role || '');
-          setIsChecking(false);
-        }
-      } catch (error) {
-        clearSession();
-        if (isMounted) {
-          setResolvedRole('');
-          setIsChecking(false);
-        }
-      }
-    }
-
-    verify();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [session.token, session.role, session.profile, refreshProfile, clearSession]);
-
-  if (isChecking) {
-    return <div className="min-h-screen grid place-items-center">Loading...</div>;
+  if (isAuthLoading) {
+    return <LoadingScreen />;
   }
 
-  if (!session.token || !resolvedRole) {
-    return <Navigate to={loginByRole[allowedRole] || '/login'} replace state={{ from: location }} />;
+  if (!session.token || !session.role) {
+    return (
+      <Navigate
+        to={loginByRole[roles[0]] || '/login'}
+        replace
+        state={{ from: location }}
+      />
+    );
   }
 
-  if (resolvedRole !== allowedRole) {
-    return <Navigate to={homeByRole[resolvedRole] || '/'} replace />;
+  if (!roles.includes(session.role)) {
+    return <Navigate to={getDashboardForRole(session.role)} replace />;
   }
 
   return children;
 };
 
-export default ProtectedRoute;
+export const UserProtectedRoute = ({ children }) => (
+  <RoleProtectedRoute allowedRoles="user">
+    {children}
+  </RoleProtectedRoute>
+);
+
+export const CaptainProtectedRoute = ({ children }) => (
+  <RoleProtectedRoute allowedRoles={[ 'captain', 'driver' ]}>
+    {children}
+  </RoleProtectedRoute>
+);
+
+export const PublicRoute = ({ children }) => {
+  const { session, isAuthLoading } = useAuth();
+
+  if (isAuthLoading) {
+    return <LoadingScreen />;
+  }
+
+  if (session.token && session.role) {
+    return <Navigate to={getDashboardForRole(session.role)} replace />;
+  }
+
+  return children;
+};
+
+export default RoleProtectedRoute;
