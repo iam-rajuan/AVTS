@@ -1,36 +1,23 @@
-import React, { createContext, useContext, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 
 const TOKEN_KEY = 'token';
 const ROLE_KEY = 'role';
 const PROFILE_KEY = 'authProfile';
 
-const getStoredProfile = () => {
-  const value = localStorage.getItem(PROFILE_KEY);
-
-  if (!value) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(value);
-  } catch (error) {
-    return null;
-  }
-};
-
 const getDefaultSession = () => ({
   token: localStorage.getItem(TOKEN_KEY) || '',
-  role: localStorage.getItem(ROLE_KEY) || '',
-  profile: getStoredProfile(),
+  role: '',
+  profile: null,
 });
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [session, setSessionState] = useState(getDefaultSession);
+  const [isAuthLoading, setIsAuthLoading] = useState(Boolean(localStorage.getItem(TOKEN_KEY)));
 
-  const setSession = ({ token, role, profile }) => {
+  const persistSession = useCallback(({ token, role, profile }) => {
     const nextSession = {
       token: token || '',
       role: role || '',
@@ -56,14 +43,14 @@ export const AuthProvider = ({ children }) => {
     } else {
       localStorage.removeItem(PROFILE_KEY);
     }
-  };
+  }, []);
 
-  const clearSession = () => {
-    setSession({ token: '', role: '', profile: null });
-  };
+  const clearSession = useCallback(() => {
+    persistSession({ token: '', role: '', profile: null });
+  }, [persistSession]);
 
-  const refreshProfile = async (tokenOverride) => {
-    const token = tokenOverride || session.token;
+  const refreshProfile = useCallback(async (tokenOverride) => {
+    const token = tokenOverride || localStorage.getItem(TOKEN_KEY);
 
     if (!token) {
       clearSession();
@@ -77,16 +64,52 @@ export const AuthProvider = ({ children }) => {
     });
 
     const authData = response.data.data;
-    setSession({
+    persistSession({
       token,
       role: authData.role,
       profile: authData.profile,
     });
 
     return authData;
-  };
+  }, [clearSession, persistSession]);
 
-  const signOut = async () => {
+  useEffect(() => {
+    let isMounted = true;
+
+    async function restoreSession() {
+      const token = localStorage.getItem(TOKEN_KEY);
+
+      if (!token) {
+        if (isMounted) {
+          setIsAuthLoading(false);
+        }
+        return;
+      }
+
+      try {
+        await refreshProfile(token);
+      } catch (error) {
+        clearSession();
+      } finally {
+        if (isMounted) {
+          setIsAuthLoading(false);
+        }
+      }
+    }
+
+    restoreSession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [clearSession, refreshProfile]);
+
+  const setSession = useCallback((authData) => {
+    persistSession(authData);
+    setIsAuthLoading(false);
+  }, [persistSession]);
+
+  const signOut = useCallback(async () => {
     try {
       if (session.token) {
         await axios.post(
@@ -104,7 +127,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       clearSession();
     }
-  };
+  }, [clearSession, session.token]);
 
   const value = useMemo(() => ({
     session,
@@ -112,8 +135,9 @@ export const AuthProvider = ({ children }) => {
     clearSession,
     refreshProfile,
     signOut,
-    isAuthenticated: Boolean(session.token),
-  }), [session]);
+    isAuthLoading,
+    isAuthenticated: Boolean(session.token && session.role),
+  }), [clearSession, isAuthLoading, refreshProfile, session, setSession, signOut]);
 
   return (
     <AuthContext.Provider value={value}>
