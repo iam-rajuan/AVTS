@@ -85,16 +85,31 @@ async function syncCaptainLiveState(captain, coords) {
         lastUpdatedAt: new Date()
     };
 
-    const liveState = await DriverLocation.findOneAndUpdate(
-        {
+    const matchingLiveStates = await DriverLocation.find({
+        $or: [
+            { captainId: captain._id },
+            { vehicleId: captain.vehicle.plate }
+        ]
+    }).sort({ updatedAt: -1 });
+    let liveState = matchingLiveStates[0];
+
+    if (liveState) {
+        await DriverLocation.deleteMany({
+            _id: { $ne: liveState._id },
             $or: [
                 { captainId: captain._id },
                 { vehicleId: captain.vehicle.plate }
             ]
-        },
-        payload,
-        { upsert: true, new: true, setDefaultsOnInsert: true }
-    );
+        });
+
+        liveState = await DriverLocation.findByIdAndUpdate(
+            liveState._id,
+            payload,
+            { new: true, runValidators: true }
+        );
+    } else {
+        liveState = await DriverLocation.create(payload);
+    }
 
     broadcastCaptainUpdate({
         captainId: liveState.captainId,

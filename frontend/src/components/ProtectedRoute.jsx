@@ -31,7 +31,7 @@ const ProtectedRoute = ({ allowedRole, children }) => {
       }
 
       try {
-        if (session.profile && session.role) {
+        if (session.profile && session.role === allowedRole) {
           if (isMounted) {
             setResolvedRole(session.role);
             setIsChecking(false);

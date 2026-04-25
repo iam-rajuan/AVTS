@@ -109,7 +109,6 @@ captainSchema.statics.hashPassword = async function (password) {
     return await bcrypt.hash(password, 10);
 }
 
-captainSchema.index({ email: 1 }, { unique: true });
 captainSchema.index({ 'vehicle.plate': 1 }, { unique: true });
 
 const captainModel = mongoose.model('captain', captainSchema)

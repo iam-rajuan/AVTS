@@ -28,6 +28,20 @@ const homeByRole = {
   captain: '/captain/home',
 };
 
+const getRouteRole = (pathname) => {
+  if (pathname.startsWith('/user/')) {
+    return 'user';
+  }
+
+  if (pathname.startsWith('/captain/')) {
+    return 'captain';
+  }
+
+  return '';
+};
+
+const getLastRouteKey = (role) => `${LAST_ROUTE_KEY}:${role || 'unknown'}`;
+
 const App = () => {
   const location = useLocation();
   const { session } = useAuth();
@@ -37,12 +51,14 @@ const App = () => {
       return;
     }
 
-    if (location.pathname.startsWith('/user/') || location.pathname.startsWith('/captain/')) {
-      localStorage.setItem(LAST_ROUTE_KEY, `${location.pathname}${location.search}`);
-    }
-  }, [location.pathname, location.search, session.token]);
+    const routeRole = getRouteRole(location.pathname);
 
-  const lastRoute = localStorage.getItem(LAST_ROUTE_KEY);
+    if (routeRole && routeRole === session.role) {
+      localStorage.setItem(getLastRouteKey(routeRole), `${location.pathname}${location.search}`);
+    }
+  }, [location.pathname, location.search, session.role, session.token]);
+
+  const lastRoute = session.role ? localStorage.getItem(getLastRouteKey(session.role)) : '';
   const authenticatedLandingRoute = lastRoute || homeByRole[session.role] || '/';
 
   return (

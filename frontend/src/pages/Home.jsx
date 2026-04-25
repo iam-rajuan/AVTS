@@ -44,17 +44,54 @@ const Home = () => {
   const createVehicleMarkerElement = (captain) => {
     const markerElement = document.createElement("button");
     markerElement.type = "button";
-    markerElement.className = "h-11 w-11 rounded-full border-2 shadow-lg flex items-center justify-center text-xl backdrop-blur-sm";
-    markerElement.style.backgroundColor = "rgba(17, 24, 39, 0.72)";
-    markerElement.style.borderColor = captain.currentLoad === "full_load" ? "#ef4444" : "#60a5fa";
-    markerElement.style.color = captain.currentLoad === "full_load" ? "#fecaca" : "#dbeafe";
+    markerElement.className = "relative flex flex-col items-center justify-center";
     markerElement.title = `${captain.captainName || "Captain"} - ${captain.vehicle?.plate || captain.vehicleId}`;
 
     const vehicleType = captain.vehicle?.vehicleType;
-    markerElement.textContent = vehicleType === "motorcycle" ? "🏍️" : vehicleType === "auto" ? "🛺" : "🚗";
+    const icon = vehicleType === "motorcycle" ? "🏍️" : vehicleType === "auto" ? "🛺" : "🚗";
+    const badgeColor = captain.currentLoad === "full_load" ? "#ef4444" : "#16a34a";
+
+    markerElement.innerHTML = `
+      <div
+        style="
+          width: 58px;
+          height: 58px;
+          border-radius: 9999px;
+          background: ${badgeColor};
+          border: 3px solid #ffffff;
+          box-shadow: 0 12px 24px rgba(0, 0, 0, 0.28);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 26px;
+          line-height: 1;
+        "
+      >
+        ${icon}
+      </div>
+      <div
+        style="
+          width: 0;
+          height: 0;
+          border-left: 10px solid transparent;
+          border-right: 10px solid transparent;
+          border-top: 14px solid ${badgeColor};
+          margin-top: -2px;
+          filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.2));
+        "
+      ></div>
+    `;
 
     return markerElement;
   };
+
+  const createMarkerPopupText = (captain) => (
+    `${captain.captainName || "Captain"} • ${captain.vehicle?.plate || captain.vehicleId}`
+  );
+
+  const getCaptainMarkerKey = (captain) => (
+    captain.captainId != null ? String(captain.captainId) : String(captain.vehicleId || captain.vehicle?.plate)
+  );
 
   const normalizeCaptainRecord = (captain) => {
     const vehicle = captain.vehicle || {};
@@ -74,6 +111,23 @@ const Home = () => {
       },
       currentLoad: captain.currentLoad || "no_load",
       customLoadLabel: captain.customLoadLabel || "",
+    };
+  };
+
+  const addTravelDetails = (captain) => {
+    if (!userCoords) {
+      return captain;
+    }
+
+    const distance = Math.sqrt(
+      Math.pow(captain.latitude - userCoords.latitude, 2) +
+      Math.pow(captain.longitude - userCoords.longitude, 2)
+    ).toFixed(2);
+
+    return {
+      ...captain,
+      distance: `${distance} km`,
+      eta: `${Math.max(1, Math.round(Number(distance) * 50))} minutes`,
     };
   };
 
@@ -190,8 +244,8 @@ const Home = () => {
 
     const activeCaptainIds = new Set(
       captains
-        .filter((captain) => captain.captainId != null)
-        .map((captain) => String(captain.captainId))
+        .map((captain) => getCaptainMarkerKey(normalizeCaptainRecord(captain)))
+        .filter(Boolean)
     );
 
     Object.entries(captainMarkers.current).forEach(([ captainId, marker ]) => {
@@ -208,17 +262,30 @@ const Home = () => {
         return;
       }
 
+      const markerKey = getCaptainMarkerKey(normalizedCaptain);
       const popupText = `${normalizedCaptain.captainName} • ${normalizedCaptain.vehicle?.plate}`;
-      const existingMarker = captainMarkers.current[ normalizedCaptain.captainId ];
+      const existingMarker = captainMarkers.current[ markerKey ];
 
       if (existingMarker) {
         existingMarker.setLngLat([ normalizedCaptain.longitude, normalizedCaptain.latitude ]);
+        existingMarker.setPopup(new mapboxgl.Popup().setText(createMarkerPopupText(normalizedCaptain)));
+
+        const existingElement = existingMarker.getElement();
+        if (existingElement) {
+          const updatedElement = createVehicleMarkerElement(normalizedCaptain);
+          existingElement.title = updatedElement.title;
+          existingElement.innerHTML = updatedElement.innerHTML;
+          existingElement.onclick = () => {
+            setSelectedCaptain(addTravelDetails(normalizedCaptain));
+          };
+        }
+
         return;
       }
 
       const marker = new mapboxgl.Marker({
         element: createVehicleMarkerElement(normalizedCaptain),
-        anchor: "center",
+        anchor: "bottom",
       })
         .setLngLat([ normalizedCaptain.longitude, normalizedCaptain.latitude ])
         .setPopup(new mapboxgl.Popup().setText(popupText))
@@ -226,24 +293,29 @@ const Home = () => {
 
       marker.getElement().style.cursor = "pointer";
       marker.getElement().onclick = () => {
-        if (!userCoords) {
-          setSelectedCaptain(captain);
-          return;
-        }
-
-        const distance = Math.sqrt(
-          Math.pow(captain.latitude - userCoords.latitude, 2) +
-          Math.pow(captain.longitude - userCoords.longitude, 2)
-        ).toFixed(2);
-
-        setSelectedCaptain({
-          ...captain,
-          distance: `${distance} km`,
-          eta: `${Math.max(1, Math.round(Number(distance) * 50))} minutes`,
-        });
+        setSelectedCaptain(addTravelDetails(normalizedCaptain));
       };
 
-      captainMarkers.current[ normalizedCaptain.captainId ] = marker;
+      captainMarkers.current[ markerKey ] = marker;
+    });
+  }, [captains, userCoords]);
+
+  useEffect(() => {
+    setSelectedCaptain((previousSelectedCaptain) => {
+      if (!previousSelectedCaptain) {
+        return null;
+      }
+
+      const selectedKey = getCaptainMarkerKey(previousSelectedCaptain);
+      const latestCaptain = captains
+        .map(normalizeCaptainRecord)
+        .find((captain) => getCaptainMarkerKey(captain) === selectedKey);
+
+      if (!latestCaptain) {
+        return previousSelectedCaptain;
+      }
+
+      return addTravelDetails(latestCaptain);
     });
   }, [captains, userCoords]);
 

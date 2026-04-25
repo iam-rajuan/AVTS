@@ -24,14 +24,29 @@ async function resolveAuth(req) {
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const role = decoded.role;
-        const Model = modelByRole[ role ];
+        const tokenSubject = decoded.sub || decoded._id;
+        let role = decoded.role;
+        let account = null;
 
-        if (!Model) {
-            return { error: { status: 401, body: { message: 'Unauthorized' } } };
+        if (role && modelByRole[ role ]) {
+            account = await modelByRole[ role ].findById(tokenSubject);
         }
 
-        const account = await Model.findById(decoded.sub || decoded._id);
+        if (!account) {
+            const userAccount = await userModel.findById(tokenSubject);
+            if (userAccount) {
+                role = 'user';
+                account = userAccount;
+            }
+        }
+
+        if (!account) {
+            const captainAccount = await captainModel.findById(tokenSubject);
+            if (captainAccount) {
+                role = 'captain';
+                account = captainAccount;
+            }
+        }
 
         if (!account) {
             return { error: { status: 401, body: { message: 'Unauthorized' } } };
