@@ -58,7 +58,7 @@ const SwitchUser = () => {
 
         <h2 className="text-sm font-normal mb-2 text-left pl-[14px]">Unlock a Seamless Journey</h2>
         <div className="flex justify-center">
-        <Link to="/login" className="flex items-center justify-center w-[315px] h-[61px] bg-blue-600 text-white rounded-lg font-medium text-lg">
+        <Link to="/login?role=user" className="flex items-center justify-center w-[315px] h-[61px] bg-blue-600 text-white rounded-lg font-medium text-lg">
           Sign in as an User
         </Link>
         </div>
@@ -67,7 +67,7 @@ const SwitchUser = () => {
         <h2 className="text-sm font-normal mb-2 text-left pl-[14px]">Drive Smarter, Live Better</h2>
         <div className="flex justify-center">
         <Link
-          to="/captain-login"
+          to="/login?role=captain"
           className="flex items-center justify-center w-[315px] h-[61px] bg-green-600 text-white rounded-lg font-medium text-lg"
           >
           Sign in as a Captain

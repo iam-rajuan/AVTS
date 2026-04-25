@@ -21,7 +21,7 @@ const FinishRide = (props) => {
         })
 
         if (response.status === 200) {
-            navigate('/captain-home')
+            navigate('/captain/home')
         }
 
     }

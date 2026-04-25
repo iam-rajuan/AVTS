@@ -89,7 +89,7 @@ const WelcomeScreen = () => {
         </main>
 
         {/* Footer Navigation */}
-        <NavigationFooter />
+        <NavigationFooter role="user" />
       </div>
     );
 };

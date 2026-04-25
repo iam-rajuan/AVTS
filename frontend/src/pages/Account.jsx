@@ -1,6 +1,7 @@
 // pages/Account.jsx
 import React, { useState } from "react";
 import { NavigationFooter } from "../components/NavigationFooter";
+import { useNavigate } from "react-router-dom";
 import {
   FaUser,
   FaCog,
@@ -10,8 +11,11 @@ import {
   FaChevronRight,
   FaRoute,
 } from "react-icons/fa";
+import { useAuth } from "../context/AuthContext";
 
 const Account = () => {
+  const navigate = useNavigate();
+  const { signOut, session } = useAuth();
   const [showRoutes, setShowRoutes] = useState(false);
   const [showPersonalDetails, setShowPersonalDetails] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -33,10 +37,12 @@ const Account = () => {
     setShowRoutes(false);
   };
 
+  const profile = session.profile;
+
   return (
     <div className="bg-gray-900 text-gray-100 min-h-screen flex flex-col justify-between pb-16">
       <div className="flex justify-between items-center px-4 py-4 border-b border-gray-700 bg-gray-900 shadow-md">
-        <h1 className="text-xl font-semibold text-white">Rajuan</h1>
+        <h1 className="text-xl font-semibold text-white">{profile?.fullname?.firstname || "User"}</h1>
         <FaBell className="text-2xl text-gray-300" />
       </div>
 
@@ -46,8 +52,8 @@ const Account = () => {
             👤
           </div>
           <div className="flex flex-col">
-            <h2 className="font-semibold text-lg text-white">Md Rajuan Hossen</h2>
-            <p className="text-sm text-gray-300">+880 1836 ••••••</p>
+            <h2 className="font-semibold text-lg text-white">{profile?.fullname?.firstname} {profile?.fullname?.lastname}</h2>
+            <p className="text-sm text-gray-300">{profile?.email}</p>
             <div className="text-yellow-500 text-sm mt-1">⭐ 5.0</div>
           </div>
         </div>
@@ -61,7 +67,7 @@ const Account = () => {
           <LinkItem icon={<FaUser />} label="Personal details" onClick={() => setShowPersonalDetails(!showPersonalDetails)} />
           {showPersonalDetails && (
             <div className="bg-gray-800 text-gray-100 p-4 rounded-lg mb-4 shadow-lg">
-              <p>Email: user@example.com</p>
+              <p>Email: {profile?.email}</p>
               <p>Phone: +880 1836 ••••••</p>
               <p>Address: Dhaka, Bangladesh</p>
             </div>
@@ -95,13 +101,19 @@ const Account = () => {
       </div>
 
       <div className="px-4 mb-4">
-        <button className="w-full bg-black text-white py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-gray-700">
+        <button
+          onClick={async () => {
+            await signOut();
+            navigate('/login?role=user');
+          }}
+          className="w-full bg-black text-white py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-gray-700"
+        >
           <FaSignOutAlt />
           Signout
         </button>
       </div>
 
-      <NavigationFooter />
+      <NavigationFooter role="user" />
     </div>
   );
 };

@@ -1,27 +1,21 @@
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
-import React from 'react'
-import axios from 'axios'
-import { useNavigate } from 'react-router-dom'
-import AVTSImage from '../assets/AVTS-R-BG.png'; 
+const CaptainLogout = () => {
+  const navigate = useNavigate();
+  const { signOut } = useAuth();
 
-export const CaptainLogout = () => {
-    const token = localStorage.getItem('captain-token')
-    const navigate = useNavigate()
+  useEffect(() => {
+    async function logout() {
+      await signOut();
+      navigate('/login?role=captain', { replace: true });
+    }
 
-    axios.get(`${import.meta.env.VITE_API_URL}/captains/logout`, {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    }).then((response) => {
-        if (response.status === 200) {
-            localStorage.removeItem('captain-token')
-            navigate('/captain-login')
-        }
-    })
+    logout();
+  }, [navigate, signOut]);
 
-    return (
-        <div>CaptainLogout</div>
-    )
-}
+  return <div className="min-h-screen grid place-items-center">Signing out...</div>;
+};
 
-export default CaptainLogout
+export default CaptainLogout;

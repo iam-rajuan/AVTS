@@ -152,6 +152,12 @@ function initializeSocket(server) {
     });
 }
 
+const broadcastCaptainUpdate = (captainState) => {
+    if (io) {
+        io.emit('captain:updated', captainState);
+    }
+};
+
 const sendMessageToSocketId = (socketId, messageObject) => {
     console.log(messageObject);
 
@@ -162,4 +168,4 @@ const sendMessageToSocketId = (socketId, messageObject) => {
     }
 }
 
-module.exports = { initializeSocket, sendMessageToSocketId };
+module.exports = { initializeSocket, sendMessageToSocketId, broadcastCaptainUpdate };

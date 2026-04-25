@@ -80,7 +80,7 @@ const Activity = () => {
         ))}
       </div>
 
-      <NavigationFooter />
+      <NavigationFooter role="user" />
     </div>
   );
 };

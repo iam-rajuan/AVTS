@@ -30,5 +30,24 @@ router.get('/profile', authMiddleware.authCaptain, captainController.getCaptainP
 
 router.get('/logout', authMiddleware.authCaptain, captainController.logoutCaptain)
 
+router.get('/available',
+    authMiddleware.authUser,
+    captainController.getAvailableCaptains
+)
+
+router.patch('/me/status',
+    authMiddleware.authCaptain,
+    body('currentLoad').isIn([ 'no_load', 'empty_capacity', 'half_load', 'full_load', 'custom' ]).withMessage('Invalid load status'),
+    body('customLoadLabel').optional().isString().isLength({ max: 50 }).withMessage('Custom label is too long'),
+    captainController.updateCaptainStatus
+)
+
+router.post('/me/location',
+    authMiddleware.authCaptain,
+    body('latitude').isFloat({ min: -90, max: 90 }).withMessage('Invalid latitude'),
+    body('longitude').isFloat({ min: -180, max: 180 }).withMessage('Invalid longitude'),
+    captainController.updateCaptainLocation
+)
+
 
 module.exports = router;

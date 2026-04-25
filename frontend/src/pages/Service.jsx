@@ -111,7 +111,7 @@ const Service = () => {
         ))}
       </div>
 
-      <NavigationFooter />
+      <NavigationFooter role="user" />
     </div>
   );
 };

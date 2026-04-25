@@ -3,6 +3,12 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 
 const captainSchema = new mongoose.Schema({
+    role: {
+        type: String,
+        enum: [ 'captain' ],
+        default: 'captain',
+        immutable: true
+    },
     fullname: {
         firstname: {
             type: String,
@@ -36,6 +42,18 @@ const captainSchema = new mongoose.Schema({
         default: 'inactive',
     },
 
+    currentLoad: {
+        type: String,
+        enum: [ 'no_load', 'empty_capacity', 'half_load', 'full_load', 'custom' ],
+        default: 'no_load'
+    },
+
+    customLoadLabel: {
+        type: String,
+        trim: true,
+        default: ''
+    },
+
     vehicle: {
         color: {
             type: String,
@@ -67,11 +85,17 @@ const captainSchema = new mongoose.Schema({
             type: Number,
         }
     }
+}, {
+    timestamps: true
 })
 
 
 captainSchema.methods.generateAuthToken = function () {
-    const token = jwt.sign({ _id: this._id }, process.env.JWT_SECRET, { expiresIn: '24h' });
+    const token = jwt.sign(
+        { sub: this._id.toString(), role: this.role || 'captain', _id: this._id },
+        process.env.JWT_SECRET,
+        { expiresIn: '24h' }
+    );
     return token;
 }
 
@@ -84,6 +108,9 @@ captainSchema.methods.comparePassword = async function (password) {
 captainSchema.statics.hashPassword = async function (password) {
     return await bcrypt.hash(password, 10);
 }
+
+captainSchema.index({ email: 1 }, { unique: true });
+captainSchema.index({ 'vehicle.plate': 1 }, { unique: true });
 
 const captainModel = mongoose.model('captain', captainSchema)
 
