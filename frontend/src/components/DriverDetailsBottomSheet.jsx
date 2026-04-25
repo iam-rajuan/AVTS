@@ -17,6 +17,27 @@ const formatLastUpdated = (value) => {
   return new Date(value).toLocaleTimeString();
 };
 
+const normalizeDriver = (driver) => {
+  const vehicle = driver.vehicle || {};
+
+  return {
+    ...driver,
+    captainName:
+      driver.captainName ||
+      [driver.fullname?.firstname, driver.fullname?.lastname].filter(Boolean).join(' ').trim() ||
+      driver.fullname?.firstname ||
+      'Unknown captain',
+    vehicle: {
+      plate: vehicle.plate || driver.vehicleId || driver.vehicleNumber || driver.plate || 'Unknown',
+      color: vehicle.color || driver.vehicleColor || '',
+      capacity: vehicle.capacity ?? driver.capacity ?? null,
+      vehicleType: vehicle.vehicleType || driver.vehicleType || '',
+    },
+    currentLoad: driver.currentLoad || 'no_load',
+    customLoadLabel: driver.customLoadLabel || '',
+  };
+};
+
 const DriverDetailsBottomSheet = ({ driver, onClose }) => {
   const sheetRef = useRef(null);
 
@@ -33,9 +54,10 @@ const DriverDetailsBottomSheet = ({ driver, onClose }) => {
 
   if (!driver) return null;
 
-  const currentStatus = statusMeta[driver.currentLoad] || statusMeta.no_load;
-  const statusLabel = driver.currentLoad === 'custom' && driver.customLoadLabel
-    ? driver.customLoadLabel
+  const normalizedDriver = normalizeDriver(driver);
+  const currentStatus = statusMeta[normalizedDriver.currentLoad] || statusMeta.no_load;
+  const statusLabel = normalizedDriver.currentLoad === 'custom' && normalizedDriver.customLoadLabel
+    ? normalizedDriver.customLoadLabel
     : currentStatus.label;
 
   return (
@@ -60,38 +82,38 @@ const DriverDetailsBottomSheet = ({ driver, onClose }) => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-xs text-gray-400 mb-1">Captain</p>
-              <p className="font-medium text-gray-100">{driver.captainName || 'Unknown captain'}</p>
+              <p className="font-medium text-gray-100">{normalizedDriver.captainName}</p>
             </div>
             <div>
               <p className="text-xs text-gray-400 mb-1">Vehicle Number</p>
-              <p className="font-medium text-gray-100">{driver.vehicle?.plate || driver.vehicleId}</p>
+              <p className="font-medium text-gray-100">{normalizedDriver.vehicle.plate}</p>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-xs text-gray-400 mb-1">Vehicle Type</p>
-              <p className="font-medium text-gray-100 capitalize">{driver.vehicle?.vehicleType || 'Unknown'}</p>
+              <p className="font-medium text-gray-100 capitalize">{normalizedDriver.vehicle.vehicleType || 'Unknown'}</p>
             </div>
             <div>
               <p className="text-xs text-gray-400 mb-1">Capacity</p>
-              <p className="font-medium text-gray-100">{driver.vehicle?.capacity || 'N/A'}</p>
+              <p className="font-medium text-gray-100">{normalizedDriver.vehicle.capacity ?? 'N/A'}</p>
             </div>
           </div>
 
           <div>
             <p className="text-xs text-gray-400 mb-1">Distance from you</p>
-            <p className="font-medium text-gray-100">{driver.distance || 'Unknown'}</p>
+              <p className="font-medium text-gray-100">{normalizedDriver.distance || 'Unknown'}</p>
           </div>
 
           <div>
             <p className="text-xs text-gray-400 mb-1">Estimated arrival time</p>
-            <p className="font-medium text-gray-100">{driver.eta || 'Unknown'}</p>
+              <p className="font-medium text-gray-100">{normalizedDriver.eta || 'Unknown'}</p>
           </div>
 
           <div>
             <p className="text-xs text-gray-400 mb-1">Last updated</p>
-            <p className="font-medium text-gray-100">{formatLastUpdated(driver.lastUpdatedAt)}</p>
+            <p className="font-medium text-gray-100">{formatLastUpdated(normalizedDriver.lastUpdatedAt)}</p>
           </div>
 
           <div className="pt-3 border-t border-gray-700">

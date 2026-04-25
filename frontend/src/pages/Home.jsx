@@ -44,14 +44,37 @@ const Home = () => {
   const createVehicleMarkerElement = (captain) => {
     const markerElement = document.createElement("button");
     markerElement.type = "button";
-    markerElement.className = "h-11 w-11 rounded-full border-2 border-white shadow-lg flex items-center justify-center text-xl";
-    markerElement.style.backgroundColor = captain.currentLoad === "full_load" ? "#ef4444" : "#10b981";
+    markerElement.className = "h-11 w-11 rounded-full border-2 shadow-lg flex items-center justify-center text-xl backdrop-blur-sm";
+    markerElement.style.backgroundColor = "rgba(17, 24, 39, 0.72)";
+    markerElement.style.borderColor = captain.currentLoad === "full_load" ? "#ef4444" : "#60a5fa";
+    markerElement.style.color = captain.currentLoad === "full_load" ? "#fecaca" : "#dbeafe";
     markerElement.title = `${captain.captainName || "Captain"} - ${captain.vehicle?.plate || captain.vehicleId}`;
 
     const vehicleType = captain.vehicle?.vehicleType;
     markerElement.textContent = vehicleType === "motorcycle" ? "🏍️" : vehicleType === "auto" ? "🛺" : "🚗";
 
     return markerElement;
+  };
+
+  const normalizeCaptainRecord = (captain) => {
+    const vehicle = captain.vehicle || {};
+
+    return {
+      ...captain,
+      captainName:
+        captain.captainName ||
+        [captain.fullname?.firstname, captain.fullname?.lastname].filter(Boolean).join(" ").trim() ||
+        captain.fullname?.firstname ||
+        "Unknown captain",
+      vehicle: {
+        plate: vehicle.plate || captain.vehicleId || "Unknown",
+        color: vehicle.color || "",
+        capacity: vehicle.capacity ?? null,
+        vehicleType: vehicle.vehicleType || "",
+      },
+      currentLoad: captain.currentLoad || "no_load",
+      customLoadLabel: captain.customLoadLabel || "",
+    };
   };
 
   const toggleDarkMode = () => {
@@ -179,23 +202,25 @@ const Home = () => {
     });
 
     captains.forEach((captain) => {
-      if (captain.latitude == null || captain.longitude == null) {
+      const normalizedCaptain = normalizeCaptainRecord(captain);
+
+      if (normalizedCaptain.latitude == null || normalizedCaptain.longitude == null) {
         return;
       }
 
-      const popupText = `${captain.captainName || "Captain"} • ${captain.vehicle?.plate || captain.vehicleId}`;
-      const existingMarker = captainMarkers.current[ captain.captainId ];
+      const popupText = `${normalizedCaptain.captainName} • ${normalizedCaptain.vehicle?.plate}`;
+      const existingMarker = captainMarkers.current[ normalizedCaptain.captainId ];
 
       if (existingMarker) {
-        existingMarker.setLngLat([ captain.longitude, captain.latitude ]);
+        existingMarker.setLngLat([ normalizedCaptain.longitude, normalizedCaptain.latitude ]);
         return;
       }
 
       const marker = new mapboxgl.Marker({
-        element: createVehicleMarkerElement(captain),
+        element: createVehicleMarkerElement(normalizedCaptain),
         anchor: "center",
       })
-        .setLngLat([ captain.longitude, captain.latitude ])
+        .setLngLat([ normalizedCaptain.longitude, normalizedCaptain.latitude ])
         .setPopup(new mapboxgl.Popup().setText(popupText))
         .addTo(map.current);
 
@@ -218,7 +243,7 @@ const Home = () => {
         });
       };
 
-      captainMarkers.current[ captain.captainId ] = marker;
+      captainMarkers.current[ normalizedCaptain.captainId ] = marker;
     });
   }, [captains, userCoords]);
 

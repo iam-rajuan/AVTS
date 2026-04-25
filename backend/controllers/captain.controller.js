@@ -22,6 +22,49 @@ function serializeCaptain(captain) {
     };
 }
 
+async function resolveCaptainProfile(location) {
+    if (!location) {
+        return null;
+    }
+
+    const captainId = location.captainId;
+    const vehicleId = location.vehicleId;
+    const captain = captainId
+        ? await captainModel.findById(captainId)
+        : await captainModel.findOne({ 'vehicle.plate': vehicleId });
+
+    return captain;
+}
+
+function normalizeLiveState(location, captain) {
+    const captainName = location.captainName
+        || [ captain?.fullname?.firstname, captain?.fullname?.lastname ].filter(Boolean).join(' ').trim()
+        || captain?.fullname?.firstname
+        || 'Unknown captain';
+
+    const vehicle = location.vehicle || captain?.vehicle || {};
+
+    return {
+        captainId: location.captainId || captain?._id || null,
+        vehicleId: location.vehicleId || vehicle.plate || null,
+        captainName,
+        vehicle: {
+            plate: vehicle.plate || location.vehicleId || 'Unknown',
+            color: vehicle.color || 'Unknown',
+            capacity: vehicle.capacity ?? null,
+            vehicleType: vehicle.vehicleType || 'Unknown',
+        },
+        currentLoad: location.currentLoad || captain?.currentLoad || 'no_load',
+        customLoadLabel: location.customLoadLabel || captain?.customLoadLabel || '',
+        isAvailable: typeof location.isAvailable === 'boolean'
+            ? location.isAvailable
+            : (captain ? captain.currentLoad !== 'full_load' : true),
+        latitude: location.latitude ?? captain?.location?.ltd ?? null,
+        longitude: location.longitude ?? captain?.location?.lng ?? null,
+        lastUpdatedAt: location.lastUpdatedAt || location.updatedAt || new Date(),
+    };
+}
+
 async function syncCaptainLiveState(captain, coords) {
     const latitude = coords?.latitude ?? captain.location?.ltd ?? 0;
     const longitude = coords?.longitude ?? captain.location?.lng ?? 0;
@@ -210,9 +253,15 @@ module.exports.updateCaptainLocation = async (req, res) => {
 
 module.exports.getAvailableCaptains = async (req, res) => {
     const liveCaptains = await DriverLocation.find({}).sort({ lastUpdatedAt: -1 });
+    const normalizedCaptains = await Promise.all(
+        liveCaptains.map(async (location) => {
+            const captain = await resolveCaptainProfile(location);
+            return normalizeLiveState(location, captain);
+        })
+    );
 
     return res.status(200).json({
         success: true,
-        data: liveCaptains
+        data: normalizedCaptains
     });
 };
