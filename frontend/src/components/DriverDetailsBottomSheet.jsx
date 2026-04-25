@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { LucideX, LucideChevronDown } from 'lucide-react';
+import { X, ChevronDown } from 'lucide-react';
 
 const DriverDetailsBottomSheet = ({ driver, onClose, onStatusChange }) => {
   const sheetRef = useRef(null);
@@ -118,7 +118,7 @@ const DriverDetailsBottomSheet = ({ driver, onClose, onStatusChange }) => {
             className="p-1 rounded-full text-gray-400 hover:bg-gray-800 hover:text-gray-200 transition-colors"
             aria-label="Close"
           >
-            <LucideX className="w-5 h-5" />
+            <X className="w-5 h-5" />
           </button>
         </div>
         
@@ -172,7 +172,7 @@ const DriverDetailsBottomSheet = ({ driver, onClose, onStatusChange }) => {
                 <span className="text-sm text-gray-200">
                   {getButtonText()}
                 </span>
-                <LucideChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showDropdown ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showDropdown ? 'rotate-180' : ''}`} />
               </button>
               
               {showDropdown && (

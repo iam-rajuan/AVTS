@@ -1,5 +1,15 @@
 {
-  "dependencies": {
-    "lucide-react": "^0.509.0"
+  "name": "avts",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "install:all": "npm install --workspaces",
+    "backend": "npm --prefix backend start",
+    "frontend": "npm --prefix frontend run dev",
+    "frontend:build": "npm --prefix frontend run build"
   }
 }

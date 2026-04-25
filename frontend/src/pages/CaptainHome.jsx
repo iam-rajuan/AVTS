@@ -4,8 +4,8 @@ import mapboxgl from 'mapbox-gl';
 import io from 'socket.io-client';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
-// Set Mapbox access token
-mapboxgl.accessToken = 'REDACTED_MAPBOX_TOKEN';
+// Set Mapbox access token from Vite env
+mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_API || '';
 
 const CaptainHome = () => {
   const [vehicleId, setVehicleId] = useState('');
@@ -417,7 +417,7 @@ export default CaptainHome;
 // import 'mapbox-gl/dist/mapbox-gl.css';
 
 // // Set Mapbox access token
-// mapboxgl.accessToken = 'REDACTED_MAPBOX_TOKEN';
+// mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_API || '';
 
 // const CaptainHome = () => {
 //   const [vehicleId, setVehicleId] = useState('');
@@ -692,7 +692,7 @@ export default CaptainHome;
 // import 'mapbox-gl/dist/mapbox-gl.css';
 
 // // Set Mapbox access token
-// mapboxgl.accessToken = 'REDACTED_MAPBOX_TOKEN';
+// mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_API || '';
 
 // const CaptainHome = () => {
 //   const [vehicleId, setVehicleId] = useState('');
@@ -962,7 +962,7 @@ export default CaptainHome;
 // import 'mapbox-gl/dist/mapbox-gl.css';
 
 // // Set Mapbox access token
-// mapboxgl.accessToken = 'REDACTED_MAPBOX_TOKEN';
+// mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_API || '';
 
 // // Fix for worker in Vite
 // if (!window.workerUrlSet) {

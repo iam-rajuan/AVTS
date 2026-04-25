@@ -21,7 +21,8 @@
   <div id="map"></div>
 
   <script>
-    mapboxgl.accessToken = 'REDACTED_MAPBOX_TOKEN';
+    const MAPBOX_TOKEN = localStorage.getItem('mapboxToken') || '';
+    mapboxgl.accessToken = MAPBOX_TOKEN;
     const socket = io('http://localhost:5000');
     let watchId;
     let map;

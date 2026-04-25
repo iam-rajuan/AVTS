@@ -5,13 +5,13 @@ import { NavigationFooter } from "../components/NavigationFooter";
 import mapboxgl from "mapbox-gl";
 import io from "socket.io-client";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { LucideLocate, LucidePlus, LucideMinus, LucideMenu, LucideX, LucideMoon, LucideSun } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import HamburgerMenu from "../components/HamburgerMenu";
 import ZoomInOut from "../components/ZoomInOut";
 import DriverDetailsBottomSheet from "../components/DriverDetailsBottomSheet";
 
-// Set Mapbox access token
-mapboxgl.accessToken = "REDACTED_MAPBOX_TOKEN";
+// Set Mapbox access token from Vite env
+mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_API || "";
 
 // Fix for worker in Vite
 if (!window.workerUrlSet) {
@@ -358,7 +358,7 @@ const Home = () => {
         onClick={toggleDarkMode}
         className="absolute top-16 right-4 z-20 bg-black text-white p-2 rounded-full shadow-lg hover:bg-gray-800"
       >
-        {darkMode ? <LucideSun className="w-6 h-6" /> : <LucideMoon className="w-6 h-6" />}
+        {darkMode ? <Sun className="w-6 h-6" /> : <Moon className="w-6 h-6" />}
       </button>
 
       <div
@@ -465,7 +465,7 @@ export default Home;
 
 
 // // Set Mapbox access token
-// mapboxgl.accessToken = "REDACTED_MAPBOX_TOKEN";
+// mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_API || "";
 
 // // Fix for worker in Vite
 // if (!window.workerUrlSet) {
@@ -876,7 +876,7 @@ export default Home;
 // import { LucideLocate, LucidePlus, LucideMinus, LucideMenu, LucideX, LucideMoon, LucideSun } from "lucide-react";
 
 // // Set Mapbox access token
-// mapboxgl.accessToken = "REDACTED_MAPBOX_TOKEN";
+// mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_API || "";
 
 // // Fix for worker in Vite
 // if (!window.workerUrlSet) {
@@ -1370,7 +1370,7 @@ export default Home;
 // import { LucideLocate, LucidePlus, LucideMinus, LucideMenu, LucideX, LucideMoon, LucideSun } from "lucide-react";
 
 // // Set Mapbox access token
-// mapboxgl.accessToken = "REDACTED_MAPBOX_TOKEN";
+// mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_API || "";
 
 // // Fix for worker in Vite
 // if (!window.workerUrlSet) {
@@ -1747,8 +1747,7 @@ export default Home;
 // import { LucideLocate, LucidePlus, LucideMinus } from "lucide-react";
 
 // // Set Mapbox access token
-// mapboxgl.accessToken =
-//   "REDACTED_MAPBOX_TOKEN";
+// mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_API || "";
 
 // // Fix for worker in Vite
 // if (!window.workerUrlSet) {
@@ -2088,7 +2087,7 @@ export default Home;
 // import 'mapbox-gl/dist/mapbox-gl.css';
 
 // // Set Mapbox access token
-// mapboxgl.accessToken = 'REDACTED_MAPBOX_TOKEN';
+// mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_API || "";
 
 // // Fix for worker in Vite
 // if (!window.workerUrlSet) {

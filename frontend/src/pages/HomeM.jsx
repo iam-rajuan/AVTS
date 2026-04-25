@@ -25,7 +25,7 @@
 // import 'mapbox-gl/dist/mapbox-gl.css';
 
 // // Set Mapbox access token
-// mapboxgl.accessToken = 'REDACTED_MAPBOX_TOKEN';
+// mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_API || '';
 
 // // Fix for worker in Vite
 // if (!window.workerUrlSet) {
